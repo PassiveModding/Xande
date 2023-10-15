@@ -1,4 +1,4 @@
-﻿using System.Numerics;
+using System.Numerics;
 using SharpGLTF.Scenes;
 using Xande.Files;
 
@@ -41,6 +41,8 @@ public class RaceDeformer {
     private float[]? ResolveDeformation( PbdFile.Deformer deformer, string name ) {
         // Try and fetch it from the PBD
         var boneNames = deformer.BoneNames;
+        if ( boneNames == null ) return null;
+
         var boneIdx   = Array.FindIndex( boneNames, x => x == name );
         if( boneIdx != -1 ) { return deformer.DeformMatrices[ boneIdx ]; }
 
