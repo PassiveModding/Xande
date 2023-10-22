@@ -18,4 +18,12 @@ public class Service {
 
     [PluginService]
     public static IPluginLog Logger { get; private set; } = null!;
+
+    [PluginService]
+    public static IClientState ClientState { get; private set; } = null!;
+
+    [PluginService]
+    public static IDataManager GameData { get; private set; } = null!;
+    [PluginService]
+    public static IObjectTable ObjectTable { get; private set; } = null!;
 }

@@ -82,7 +82,14 @@ public class LuminaManager {
         var texFile = GetFile< TexFile >( path, origPath );
         if( texFile == null ) throw new Exception( $"Lumina was unable to fetch a .tex file from {path}." );
         var texBuffer = texFile.TextureBuffer.Filter( format: TexFile.TextureFormat.B8G8R8A8 );
-        fixed( byte* raw = texBuffer.RawData ) { return new Bitmap( texBuffer.Width, texBuffer.Height, texBuffer.Width * 4, PixelFormat.Format32bppArgb, ( nint )raw ); }
+
+        Bitmap bmp;
+        fixed( byte* raw = texBuffer.RawData ) { bmp = new Bitmap( texBuffer.Width, texBuffer.Height, texBuffer.Width * 4, PixelFormat.Format32bppArgb, ( nint )raw ); }
+
+        // make a full copy of the bitmap since working with the original causes issues when exporting multiple textures at once
+        var copy = new Bitmap( bmp );
+        bmp.Dispose();
+        return copy;
     }
 
     /// <inheritdoc cref="GetTextureBuffer(string)"/>

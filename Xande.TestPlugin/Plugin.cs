@@ -12,7 +12,7 @@ public class Plugin : IDalamudPlugin {
     public static Configuration Configuration { get; set; } = null!;
     private static readonly WindowSystem WindowSystem = new("Xande.TestPlugin");
     public static IPluginLog Logger { get; set; }
-    private readonly        MainWindow   _mainWindow;
+    private readonly MainWindow _mainWindow;
 
     public Plugin( DalamudPluginInterface pluginInterface ) {
         pluginInterface.Create< Service >();
@@ -22,6 +22,7 @@ public class Plugin : IDalamudPlugin {
 
         _mainWindow = new MainWindow();
         WindowSystem.AddWindow( _mainWindow );
+
 
         Service.CommandManager.AddHandler( "/xande", new CommandInfo( OnCommand ) {
             HelpMessage = "Open the test menu"

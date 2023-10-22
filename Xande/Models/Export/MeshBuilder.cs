@@ -161,13 +161,16 @@ public class MeshBuilder {
         var skinningIsEmpty = _skinningT == typeof( VertexEmpty );
         if( !skinningIsEmpty ) {
             for( var k = 0; k < 4; k++ ) {
-                var boneIndex       = vertex.BlendIndices[ k ];
-                var mappedBoneIndex = _jointMap[ boneIndex ];
-                var boneWeight      = vertex.BlendWeights != null ? vertex.BlendWeights.Value[ k ] : 0;
 
-                var binding = ( mappedBoneIndex, boneWeight );
-                _skinningParamCache.Add( binding );
-            }
+                var boneIndex = vertex.BlendIndices[k];
+                if (_jointMap.ContainsKey(boneIndex)) {
+
+                    var mappedBoneIndex = _jointMap[boneIndex];
+                    var boneWeight      = vertex.BlendWeights != null ? vertex.BlendWeights.Value[k] : 0;
+                    var binding         = (mappedBoneIndex, boneWeight);
+                    _skinningParamCache.Add( binding );
+                }
+            }   
         }
 
         var origPos    = ToVec3( vertex.Position!.Value );

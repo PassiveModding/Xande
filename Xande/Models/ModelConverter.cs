@@ -214,7 +214,7 @@ public class ModelConverter {
     /// <param name="skeletons">A list of HavokXml instances.</param>
     /// <param name="root">The root bone node.</param>
     /// <returns>A mapping of bone name to node in the scene.</returns>
-    private Dictionary<string, NodeBuilder> GetBoneMap( HavokXml[] skeletons, out NodeBuilder? root ) {
+    public static Dictionary<string, NodeBuilder> GetBoneMap( IEnumerable< HavokXml > skeletons, out NodeBuilder? root ) {
         Dictionary<string, NodeBuilder> boneMap = new();
         root = null;
 

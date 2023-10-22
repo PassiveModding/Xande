@@ -10,7 +10,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xande", "Xande\Xande.csproj
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xande.TestPlugin", "Xande.TestPlugin\Xande.TestPlugin.csproj", "{D55C2DEE-6341-4CD6-B2B2-9D45A0C27318}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xande.GltfImporter", "Xande.GltfImporter\Xande.GltfImporter.csproj", "{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xande.GltfImporter", "Xande.GltfImporter\Xande.GltfImporter.csproj", "{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Penumbra.Api", "..\..\Penumbra\Penumbra.Api\Penumbra.Api.csproj", "{A8D7840F-E3FD-474B-BE98-AB00F7333985}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,6 +32,10 @@ Global
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8D7840F-E3FD-474B-BE98-AB00F7333985}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8D7840F-E3FD-474B-BE98-AB00F7333985}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8D7840F-E3FD-474B-BE98-AB00F7333985}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8D7840F-E3FD-474B-BE98-AB00F7333985}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

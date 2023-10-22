@@ -20,6 +20,7 @@ public class MainWindow : Window, IDisposable {
     private readonly LuminaManager     _luminaManager;
     private readonly ModelConverter    _modelConverter;
     private readonly SklbResolver      _sklbResolver;
+    private readonly ResourceTab _resourceTab;
 
     private const string SklbFilter = "FFXIV Skeleton{.sklb}";
     private const string PbdFilter  = "FFXIV Bone Deformer{.pbd}";
@@ -61,13 +62,14 @@ public class MainWindow : Window, IDisposable {
 
         SizeConstraints = new WindowSizeConstraints {
             MinimumSize = new Vector2( 375, 350 ),
-            MaximumSize = new Vector2( 1000, 500 ),
+            MaximumSize = new Vector2( 1200, 1000 ),
         };
 
         _luminaManager  = new LuminaManager( origPath => Plugin.Configuration.ResolverOverrides.TryGetValue( origPath, out var newPath ) ? newPath : null );
         _modelConverter = new ModelConverter( _luminaManager, new PenumbraIPCPathResolver( Service.PluginInterface ), new DalamudLogger() );
         _sklbResolver   = new SklbResolver( Service.PluginInterface );
         IsOpen          = Plugin.Configuration.AutoOpen;
+        _resourceTab    = new ResourceTab(_luminaManager, _converter );
     }
 
     public void Dispose() { }
@@ -97,6 +99,12 @@ public class MainWindow : Window, IDisposable {
         if( ImGui.BeginTabItem( "Export .mdl" ) ) {
             DrawStatus();
             DrawExportTab();
+            ImGui.EndTabItem();
+        }
+
+        if( ImGui.BeginTabItem( "Resources" ) ) {
+            DrawStatus();
+            _resourceTab.Draw();
             ImGui.EndTabItem();
         }
 
