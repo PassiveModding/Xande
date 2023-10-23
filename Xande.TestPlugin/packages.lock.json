@@ -54,10 +54,20 @@
           "SharpGLTF.Core": "[1.0.0-alpha0028, )",
           "SharpGLTF.Toolkit": "[1.0.0-alpha0028, )",
           "System.Drawing.Common": "[8.0.0-preview.2.23128.3, )",
-          "Xande.GltfImporter": "[1.0.0, )"
+          "Xande.GltfImporter": "[1.0.0, )",
+          "Xande.Lumina": "[1.0.0, )"
         }
       },
       "xande.gltfimporter": {
+        "type": "Project",
+        "dependencies": {
+          "Lumina": "[3.11.0, )",
+          "SharpGLTF.Core": "[1.0.0-alpha0028, )",
+          "SharpGLTF.Toolkit": "[1.0.0-alpha0028, )",
+          "Xande.Lumina": "[1.0.0, )"
+        }
+      },
+      "xande.lumina": {
         "type": "Project",
         "dependencies": {
           "Lumina": "[3.11.0, )",

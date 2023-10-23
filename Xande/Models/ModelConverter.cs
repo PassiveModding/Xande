@@ -2,20 +2,19 @@ using System.Drawing;
 using System.Numerics;
 using Dalamud.Logging;
 using Lumina.Data.Parsing;
-using Lumina.Models.Models;
-using SharpGLTF.Materials;
-using SharpGLTF.Scenes;
-using SharpGLTF.Schema2;
 using Xande.Files;
 using Xande.Havok;
 using Xande.Models.Export;
-using Mesh = Lumina.Models.Models.Mesh;
-using Lumina.Data.Files;
-using Lumina.Data;
-using SharpGLTF.Geometry;
-using SharpGLTF.Geometry.VertexTypes;
 using Lumina;
+using SharpGLTF.Materials;
+using SharpGLTF.Scenes;
+using SharpGLTF.Schema2;
 using Xande.GltfImporter;
+using Material = Xande.Lumina.Materials.Material;
+using Mesh = Xande.Lumina.Models.Mesh;
+using Model = Xande.Lumina.Models.Model;
+using Texture = Xande.Lumina.Materials.Texture;
+using Vertex = Xande.Lumina.Models.Vertex;
 
 // ReSharper disable InconsistentNaming
 
@@ -44,7 +43,7 @@ public class ModelConverter {
     private readonly PbdFile _pbd;
     private readonly IPathResolver? _pathResolver;
 
-    private Dictionary<string, Lumina.Models.Materials.Material> _materials = new();
+    private Dictionary<string, Material> _materials = new();
     private Dictionary<string, Texture> _textures = new();
 
     private ILogger? _logger;
@@ -84,7 +83,7 @@ public class ModelConverter {
     */
 
 
-    private void ComposeTextures( MaterialBuilder glTFMaterial, Lumina.Models.Materials.Material xivMaterial, string outputDir ) {
+    private void ComposeTextures( MaterialBuilder glTFMaterial, Material xivMaterial, string outputDir ) {
         var xivTextureMap = new Dictionary<TextureUsage, Bitmap>();
 
         foreach( var xivTexture in xivMaterial.Textures ) {

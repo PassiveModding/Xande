@@ -4,10 +4,11 @@ using Lumina.Data.Parsing;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Runtime.InteropServices;
+using Xande.Lumina.Materials;
 
 namespace Xande {
     public class TextureUtility {
-        public static IReadOnlyList<(TextureUsage, Bitmap)> ComputeCharacterModelTextures( Lumina.Models.Materials.Material xivMaterial, BitmapData normal, BitmapData? initDiffuse ) {
+        public static IReadOnlyList<(TextureUsage, Bitmap)> ComputeCharacterModelTextures( Material xivMaterial, BitmapData normal, BitmapData? initDiffuse ) {
             var diffuse = new Bitmap( normal.Width, normal.Height, PixelFormat.Format32bppArgb );
             var specular = new Bitmap( normal.Width, normal.Height, PixelFormat.Format32bppArgb );
             var emission = new Bitmap( normal.Width, normal.Height, PixelFormat.Format32bppArgb );

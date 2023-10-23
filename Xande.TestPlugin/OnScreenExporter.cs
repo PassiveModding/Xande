@@ -11,19 +11,19 @@ using Xande.Files;
 using Xande.Havok;
 using Xande.Models.Export;
 using System.Numerics;
-using Lumina.Models.Materials;
-using Lumina.Models.Models;
 using Xande.Models;
 using Lumina.Data;
 using Xande.TestPlugin.Models;
 using Xande.Enums;
+using Xande.Lumina.Materials;
+using Xande.Lumina.Models;
 
 namespace Xande.TestPlugin {
     public class OnScreenExporter {
-        private readonly HavokConverter                 _converter;
-        private readonly LuminaManager                  _luminaManager;
-        private readonly PbdFile                        _pbd;
-        private readonly IPluginLog                     _log;
+        private readonly HavokConverter _converter;
+        private readonly LuminaManager  _luminaManager;
+        private readonly PbdFile        _pbd;
+        private readonly IPluginLog     _log;
 
         // tbd if this is needed, ran into issues when accessing multiple skeletons in succession
         private readonly Dictionary< string, HavokXml > _skeletonCache = new();
@@ -77,7 +77,6 @@ namespace Xande.TestPlugin {
                 // will error if not done on the framework thread
                 var skeletons = new List< HavokXml >();
                 try {
-
                     foreach( var node in skeletonNodes ) {
                         // cannot use fullpath because things like ivcs are fucky and crash the game
                         var nodePath = node.FullPath;
@@ -89,9 +88,7 @@ namespace Xande.TestPlugin {
                         try {
                             var file = _luminaManager.GetFile< FileResource >( nodePath );
 
-                            if( file == null ) {
-                                throw new Exception( "GetFile returned null" );
-                            }
+                            if( file == null ) { throw new Exception( "GetFile returned null" ); }
 
                             var sklb = SklbFile.FromStream( file.Reader.BaseStream );
 
@@ -113,9 +110,7 @@ namespace Xande.TestPlugin {
                         try {
                             var file = _luminaManager.GetFile< FileResource >( nodePath );
 
-                            if( file == null ) {
-                                throw new Exception( "GetFile returned null" );
-                            }
+                            if( file == null ) { throw new Exception( "GetFile returned null" ); }
 
                             var sklb = SklbFile.FromStream( file.Reader.BaseStream );
 
@@ -147,7 +142,6 @@ namespace Xande.TestPlugin {
                     }
                     catch( Exception e ) { _log.Error( e, "Error while exporting character" ); }
                     finally { ExportSemaphore.Release(); }
-
                 }, cancellationToken );
             }, cancellationToken: cancellationToken );
         }
@@ -165,7 +159,14 @@ namespace Xande.TestPlugin {
                 if( root != null ) { glTfScene.AddNode( root ); }
 
                 var modelTasks = new List< Task >();
+                // chara/human/c1101/obj/body/b0003/model/c1101b0003_top.mdl
+                var stupidLowPolyModelRegex = new Regex( @"^chara/human/c\d+/obj/body/b0003/model/c\d+b0003_top.mdl$");
                 foreach( var node in modelNodes ) {
+                    if( stupidLowPolyModelRegex.IsMatch( node.GamePath ) )
+                    {
+                        _log.Warning( $"Skipping model {node.FullPath}" );
+                        continue;
+                    }
                     _log.Debug( $"Handling model {node.FullPath}" );
                     modelTasks.Add( HandleModel( node, raceDeformer, deform, exportPath, boneMap, joints, glTfScene, cancellationToken ) );
                 }
@@ -195,7 +196,8 @@ namespace Xande.TestPlugin {
             var path = node.FullPath;
             //var file = _luminaManager.GetFile<FileResource>(path);
             if( !TryGetModel( node, deform, out var modelPath, out var model ) ) { return; }
-            if (model == null) return;
+
+            if( model == null ) return;
 
             if( string.Equals( path, modelPath, StringComparison.InvariantCultureIgnoreCase ) ) { _log.Debug( $"Using full path for {path}" ); }
             else {
@@ -204,16 +206,17 @@ namespace Xande.TestPlugin {
                     $"Init path: {path}" );
             }
 
-            var name                     = Path.GetFileNameWithoutExtension( path );
-            var raceCode                 = raceDeformer.RaceCodeFromPath( path );
+            var name     = Path.GetFileNameWithoutExtension( path );
+            var raceCode = raceDeformer.RaceCodeFromPath( path );
 
             // reaper eye go away
-            var stupidEyeMeshRegex = new Regex( @"^/mt_c\d+f.+_etc_b.mtrl$" );
-            var meshes = model.Meshes.Where( x => x.Types.Contains( Mesh.MeshType.Main ) && !stupidEyeMeshRegex.IsMatch( x.Material.MaterialPath.ToString() ) )
+            var stupidEyeMeshRegex      = new Regex( @"^/mt_c\d+f.+_etc_b.mtrl$" );
+            var meshes = model.Meshes.Where( x => x.Types.Contains( Mesh.MeshType.Main ) &&
+                    !stupidEyeMeshRegex.IsMatch( x.Material.MaterialPath.ToString() ) )
                 .ToArray();
             var nodeChildren = node.Children.ToList();
 
-            var materials  = new List< (string fullpath, string gamepath, MaterialBuilder material) >();
+            var materials = new List< (string fullpath, string gamepath, MaterialBuilder material) >();
 
             var textureTasks = new List< Task >();
 
@@ -241,15 +244,13 @@ namespace Xande.TestPlugin {
                     }
 
                     try {
-                        var glTfMaterial = ComposeTextures(  material, exportPath, child.Children, cancellationToken );
+                        var glTfMaterial = ComposeTextures( material, exportPath, child.Children, cancellationToken );
 
                         if( glTfMaterial == null ) { return; }
 
                         materials.Add( ( child.FullPath, child.GamePath, glTfMaterial ) );
                     }
-                    catch( Exception e ) {
-                        _log.Error( e, $"Failed to compose textures for material {child.FullPath}" );
-                    }
+                    catch( Exception e ) { _log.Error( e, $"Failed to compose textures for material {child.FullPath}" ); }
                 }, cancellationToken ) );
             }
 
@@ -278,8 +279,9 @@ namespace Xande.TestPlugin {
                     var match  = materials.Select( x => ( x.fullpath, x.gamepath, ComputeLd( x.fullpath, mesh.Material.ResolvedPath ) ) ).OrderBy( x => x.Item3 ).FirstOrDefault();
                     var match2 = materials.Select( x => ( x.fullpath, x.gamepath, ComputeLd( x.gamepath, mesh.Material.ResolvedPath ) ) ).OrderBy( x => x.Item3 ).FirstOrDefault();
 
-                    material = match.Item3 < match2.Item3 ? materials.FirstOrDefault( x => x.fullpath == match.fullpath || x.gamepath == match.gamepath ) :
-                        materials.FirstOrDefault( x => x.fullpath == match2.fullpath || x.gamepath == match2.gamepath );
+                    material = match.Item3 < match2.Item3
+                        ? materials.FirstOrDefault( x => x.fullpath == match.fullpath || x.gamepath == match.gamepath )
+                        : materials.FirstOrDefault( x => x.fullpath == match2.fullpath || x.gamepath == match2.gamepath );
                 }
 
                 if( material == default ) {
@@ -292,9 +294,7 @@ namespace Xande.TestPlugin {
 
                     await HandleMeshCreation( material.material, raceDeformer, glTfScene, mesh, model, raceCode, deform, boneMap, name, joints );
                 }
-                catch( Exception e ) {
-                    _log.Error( e, $"Failed to handle mesh creation for {mesh.Material.ResolvedPath}" );
-                }
+                catch( Exception e ) { _log.Error( e, $"Failed to handle mesh creation for {mesh.Material.ResolvedPath}" ); }
             }
         }
 
@@ -360,7 +360,6 @@ namespace Xande.TestPlugin {
 
                         if( useSkinning ) { glTfScene.AddSkinnedMesh( subMesh, Matrix4x4.Identity, joints ); }
                         else { glTfScene.AddRigidMesh( subMesh, Matrix4x4.Identity ); }
-
                     }
                     catch( Exception e ) { _log.Error( e, $"Failed to build submesh {i} for {name}" ); }
                 }
@@ -382,17 +381,11 @@ namespace Xande.TestPlugin {
         private bool TryGetModel( Node node, ushort? deform, out string path, out Model? model ) {
             lock( ModelLoadLock ) {
                 path = node.FullPath;
-                if( TryLoadModel( node.FullPath, out model ) ) {
-                    return true;
-                }
+                if( TryLoadModel( node.FullPath, out model ) ) { return true; }
 
-                if( TryLoadModel( node.GamePath, out model ) ) {
-                    return true;
-                }
+                if( TryLoadModel( node.GamePath, out model ) ) { return true; }
 
-                if( TryLoadRacialModel( node.GamePath, deform, out var newPath, out model ) ) {
-                    return true;
-                }
+                if( TryLoadRacialModel( node.GamePath, deform, out var newPath, out model ) ) { return true; }
 
                 _log.Warning( $"Could not load model\n{node.FullPath}\n{node.GamePath}\n{newPath}" );
                 return false;
@@ -424,7 +417,7 @@ namespace Xande.TestPlugin {
             }
         }
 
-        private MaterialBuilder? ComposeTextures( Material xivMaterial, string outputDir, Node[]? nodes, CancellationToken cancellationToken) {
+        private MaterialBuilder? ComposeTextures( Material xivMaterial, string outputDir, Node[]? nodes, CancellationToken cancellationToken ) {
             var xivTextureMap = new Dictionary< TextureUsage, Bitmap >();
 
             foreach( var xivTexture in xivMaterial.Textures ) {
@@ -447,7 +440,7 @@ namespace Xande.TestPlugin {
                     }
                 }
 
-                var textureBuffer = _luminaManager.GetTextureBuffer( texturePath, xivTexture.TexturePath );
+                var textureBuffer = _luminaManager.GetTextureBufferCopy( texturePath, xivTexture.TexturePath );
                 xivTextureMap.Add( xivTexture.TextureUsageRaw, textureBuffer );
             }
 
@@ -553,7 +546,6 @@ namespace Xande.TestPlugin {
                                     ) );
                                 }
                             }
-
                         }
                         finally { normal.UnlockBits( normalData ); }
 

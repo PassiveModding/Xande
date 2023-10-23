@@ -4,6 +4,10 @@ using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;
 using Xande.Files;
+using Mesh = Xande.Lumina.Models.Mesh;
+using Shape = Xande.Lumina.Models.Shape;
+using Submesh = Xande.Lumina.Models.Submesh;
+using Vertex = Xande.Lumina.Models.Vertex;
 
 namespace Xande.Models.Export;
 

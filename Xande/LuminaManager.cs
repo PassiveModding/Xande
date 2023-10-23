@@ -7,6 +7,9 @@ using Lumina.Data.Files;
 using Lumina.Models.Materials;
 using Lumina.Models.Models;
 using Xande.Files;
+using Material = Xande.Lumina.Materials.Material;
+using Model = Xande.Lumina.Models.Model;
+using Texture = Xande.Lumina.Materials.Texture;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -83,10 +86,11 @@ public class LuminaManager {
         if( texFile == null ) throw new Exception( $"Lumina was unable to fetch a .tex file from {path}." );
         var texBuffer = texFile.TextureBuffer.Filter( format: TexFile.TextureFormat.B8G8R8A8 );
 
-        Bitmap bmp;
-        fixed( byte* raw = texBuffer.RawData ) { bmp = new Bitmap( texBuffer.Width, texBuffer.Height, texBuffer.Width * 4, PixelFormat.Format32bppArgb, ( nint )raw ); }
+        fixed( byte* raw = texBuffer.RawData ) { return new Bitmap( texBuffer.Width, texBuffer.Height, texBuffer.Width * 4, PixelFormat.Format32bppArgb, ( nint )raw ); }
+    }
 
-        // make a full copy of the bitmap since working with the original causes issues when exporting multiple textures at once
+    public Bitmap GetTextureBufferCopy( string path, string? origPath = null ) {
+        var bmp = GetTextureBuffer( path, origPath );
         var copy = new Bitmap( bmp );
         bmp.Dispose();
         return copy;

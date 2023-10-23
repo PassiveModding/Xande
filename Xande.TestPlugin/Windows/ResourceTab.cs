@@ -15,28 +15,29 @@ using Xande.TestPlugin.Models;
 
 namespace Xande.TestPlugin.Windows {
     public class ResourceTab : IDisposable {
-        private readonly IPluginLog                                                                                       _log;
-        private readonly OnScreenExporter                                                                                 _onScreenExporter;
-        private readonly DalamudPluginInterface                                                                           _dalamudPluginInterface;
-        private          Task<(string name, string hash, ResourceTree tree, DateTime refreshedAt, bool[] exportOptions)>? _resourceTask;
-        private          (string name, string hash, ResourceTree tree, DateTime refreshedAt, bool[] exportOptions)?       _resourceTaskResult;
-        private          CancellationTokenSource                                                                          _exportCts;
-        private readonly FileDialogManager                                                                                _manager;
-        private          Task?                                                                                            _exportTask;
-        private          int                                                                                              _selectedGameObjectIndex;
-        private          string                                                                                           _searchFilter  = string.Empty;
-        private          bool                                                                                             _autoExport    = true;
-        private readonly string                                                                                           _tempDirectory = Path.Combine( Path.GetTempPath(), "Penumbra.XandeTest" );
+        private readonly IPluginLog _log;
+        private readonly OnScreenExporter _onScreenExporter;
+        private readonly DalamudPluginInterface _dalamudPluginInterface;
+        private          Task< (string name, string hash, ResourceTree tree, DateTime refreshedAt, bool[] exportOptions) >? _resourceTask;
+        private          (string name, string hash, ResourceTree tree, DateTime refreshedAt, bool[] exportOptions)? _resourceTaskResult;
+        private          CancellationTokenSource _exportCts;
+        private readonly FileDialogManager _manager;
+        private          Task? _exportTask;
+        private          int _selectedGameObjectIndex;
+        private          string _searchFilter = string.Empty;
+        private          bool _autoExport = false;
+        private          bool _autoRefresh = false;
+        private readonly string _tempDirectory = Path.Combine( Path.GetTempPath(), "Penumbra.XandeTest" );
 
 
         public ResourceTab( LuminaManager luminaManager, HavokConverter converter ) {
             _dalamudPluginInterface = Service.PluginInterface;
-            _log = Service.Logger;
-            _exportCts = new CancellationTokenSource();
+            _log                    = Service.Logger;
+            _exportCts              = new CancellationTokenSource();
             _manager = new FileDialogManager {
                 AddedWindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.NoDocking
             };
-            _manager.CustomSideBarItems.Add( ("Penumbra.XandeTest", _tempDirectory, FontAwesomeIcon.Folder, 0) );
+            _manager.CustomSideBarItems.Add( ( "Penumbra.XandeTest", _tempDirectory, FontAwesomeIcon.Folder, 0 ) );
             _onScreenExporter = new OnScreenExporter( converter, luminaManager );
         }
 
@@ -52,10 +53,9 @@ namespace Xande.TestPlugin.Windows {
             if( ImGui.Button( "Load from disk" ) ) {
                 _manager.OpenFileDialog( "Select Resource File", "Json Files{.json}", ( selected, paths ) => {
                     if( !selected ) return;
-                    if (paths.Count == 0) {
-                        return;
-                    }
-                    var path = paths[0];
+                    if( paths.Count == 0 ) { return; }
+
+                    var path = paths[ 0 ];
                     _resourceTask = LoadResourceListFromDisk( path );
                 }, 1, startPath: _tempDirectory, isModal: true );
             }
@@ -64,9 +64,7 @@ namespace Xande.TestPlugin.Windows {
                 .Where( x =>
                     x.ObjectKind is ObjectKind.Player or ObjectKind.BattleNpc or ObjectKind.Retainer or ObjectKind.EventNpc or ObjectKind.Companion
                 ).ToArray();
-            if( objects.Length == 0 ) {
-                ImGui.Text( "No game objects found" );
-            }
+            if( objects.Length == 0 ) { ImGui.Text( "No game objects found" ); }
             else {
                 // combo for selecting game object
                 ImGui.Text( "Select Game Object" );
@@ -74,34 +72,31 @@ namespace Xande.TestPlugin.Windows {
 
                 // text input to allow searching
                 var filter = _searchFilter;
-                if( ImGui.InputText( "##Filter", ref filter, 100 ) ) {
-                    _searchFilter = filter;
-                }
+                if( ImGui.InputText( "##Filter", ref filter, 100 ) ) { _searchFilter = filter; }
+
                 if( !string.IsNullOrEmpty( filter ) ) {
                     objects = objects.Where( x => x.Name.ToString().Contains( filter, StringComparison.OrdinalIgnoreCase ) ).ToArray();
                     // edit index if it's out of range
-                    if( selected >= objects.Length ) {
-                        selected = objects.Length - 1;
-                    }
+                    if( selected >= objects.Length ) { selected = objects.Length - 1; }
                 }
 
                 var names = objects.Select( x => $"{x.Name} - {x.ObjectKind}" ).ToArray();
 
                 if( ImGui.Combo( "##GameObject", ref selected, names, names.Length ) ) {
                     _selectedGameObjectIndex = selected;
-                    _resourceTask = RefreshResourceList( objects[selected].ObjectIndex, _resourceTask?.Result );
+                    _resourceTask            = RefreshResourceList( objects[ selected ].ObjectIndex, _resourceTask?.Result );
                 }
-                else {
+                else if (_autoRefresh) {
                     // auto refresh while logged in
                     if( Service.ClientState.IsLoggedIn &&
-                       (_resourceTask == null || _resourceTask.IsCompleted) &&
-                       (_resourceTask == null || _resourceTask.Result.refreshedAt.AddSeconds( 0.1 ) < DateTime.UtcNow) ) {
+                       ( _resourceTask == null || _resourceTask.IsCompleted ) &&
+                       ( _resourceTask == null || _resourceTask.Result.refreshedAt.AddSeconds( 0.1 ) < DateTime.UtcNow ) ) {
                         _resourceTask = RefreshResourceList( objects[ selected ].ObjectIndex, _resourceTask?.Result );
                     }
                 }
             }
 
-            if (_resourceTask == null) {
+            if( _resourceTask == null ) {
                 ImGui.Text( "No resources found" );
                 return;
             }
@@ -113,9 +108,9 @@ namespace Xande.TestPlugin.Windows {
                 }
             }
             else if( _resourceTask != null ) {
-                    if( !_resourceTask.IsCompleted ) { ImGui.Text( "Loading..." ); }
-                    else if( _resourceTask.Exception != null ) { ImGui.Text( $"Error loading resources\n\n{_resourceTask.Exception}" ); }
-                    else if( _resourceTask.IsCompletedSuccessfully ) { _resourceTaskResult = _resourceTask.Result; }
+                if( !_resourceTask.IsCompleted ) { ImGui.Text( "Loading..." ); }
+                else if( _resourceTask.Exception != null ) { ImGui.Text( $"Error loading resources\n\n{_resourceTask.Exception}" ); }
+                else if( _resourceTask.IsCompletedSuccessfully ) { _resourceTaskResult = _resourceTask.Result; }
             }
 
             // dropdown to select
@@ -133,35 +128,34 @@ namespace Xande.TestPlugin.Windows {
             ImGui.Text( resourceTaskResult.name );
             DrawResourceTree( resourceTaskResult.tree, ref resourceTaskResult.exportOptions );
         }
-        private void DrawResourceTree( ResourceTree resourceTree, ref bool[] exportOptions ) {
 
+        private void DrawResourceTree( ResourceTree resourceTree, ref bool[] exportOptions ) {
             // disable buttons if exporting
             bool disableExport = _exportTask != null;
-            if( disableExport ) {
-                ImGui.PushStyleVar( ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f );
-            }
+            if( disableExport ) { ImGui.PushStyleVar( ImGuiStyleVar.Alpha, ImGui.GetStyle().Alpha * 0.5f ); }
 
             // export button
-            if( ImGui.Button( $"Export {exportOptions.Count(x => x)} selected" ) && _exportTask == null ) {
+            if( ImGui.Button( $"Export {exportOptions.Count( x => x )} selected" ) && _exportTask == null ) {
                 _exportTask = _onScreenExporter.ExportResourceTree( resourceTree, exportOptions, true, _exportCts.Token );
             }
+
             ImGui.SameLine();
             // export all button
             if( ImGui.Button( "Export All" ) && _exportTask == null ) {
                 _exportTask = _onScreenExporter.ExportResourceTree( resourceTree, new bool[resourceTree.Nodes.Length].Select( _ => true ).ToArray(), true, _exportCts.Token );
             }
 
-            if( disableExport ) {
-                ImGui.PopStyleVar();
-            }
+            if( disableExport ) { ImGui.PopStyleVar(); }
 
             // auto export checkbox
             ImGui.SameLine();
             ImGui.Checkbox( "Auto Export", ref _autoExport );
-            // hover to show tooltip
-            if( ImGui.IsItemHovered() ) {
-                ImGui.SetTooltip( "Automatically export when resources are changed" );
-            }
+            if( ImGui.IsItemHovered() ) { ImGui.SetTooltip( "Automatically export when resources are changed" ); }
+
+            // auto refresh checkbox
+            ImGui.SameLine();
+            ImGui.Checkbox( "Auto Refresh", ref _autoRefresh );
+            if( ImGui.IsItemHovered() ) { ImGui.SetTooltip( "Automatically refresh when resources are changed" ); }
 
             // cancel button
             if( _exportTask == null ) {
@@ -171,9 +165,7 @@ namespace Xande.TestPlugin.Windows {
             else {
                 // show cancelling... if cancelled but not completed.
                 // if completed then show export again
-                if( _exportTask.IsCompleted ) {
-                    _exportTask = null!;
-                }
+                if( _exportTask.IsCompleted ) { _exportTask = null!; }
                 else if( _exportTask.IsCanceled ) {
                     ImGui.SameLine();
                     ImGui.TextUnformatted( "Export Cancelled..." );
@@ -188,6 +180,10 @@ namespace Xande.TestPlugin.Windows {
                 }
             }
 
+            if( resourceTree?.Nodes == null ) {
+                return;
+            }
+
             using var table = ImRaii.Table( "##ResourceTable", 3, ImGuiTableFlags.SizingFixedFit | ImGuiTableFlags.RowBg | ImGuiTableFlags.Resizable );
             if( !table )
                 return;
@@ -198,14 +194,14 @@ namespace Xande.TestPlugin.Windows {
             ImGui.TableHeadersRow();
 
             for( int i = 0; i < resourceTree.Nodes.Length; i++ ) {
-                var node = resourceTree.Nodes[i];
-                var exportOption = exportOptions[i];
+                var node         = resourceTree.Nodes[ i ];
+                var exportOption = exportOptions[ i ];
 
                 // only interested in mdl, sklb and tex
                 var type = ( Penumbra.Api.Enums.ResourceType )node.Type;
                 if( type != Penumbra.Api.Enums.ResourceType.Mdl
-                    && type != Penumbra.Api.Enums.ResourceType.Sklb
-                    && type != Penumbra.Api.Enums.ResourceType.Tex )
+                   && type != Penumbra.Api.Enums.ResourceType.Sklb
+                   && type != Penumbra.Api.Enums.ResourceType.Tex )
                     continue;
 
                 ImGui.TableNextRow();
@@ -213,11 +209,9 @@ namespace Xande.TestPlugin.Windows {
                 if( node.Children.Length > 0 ) {
                     if( type == Penumbra.Api.Enums.ResourceType.Mdl ) {
                         ImGui.Checkbox( $"##{node.GetHashCode()}", ref exportOption );
-                        exportOptions[i] = exportOption;
+                        exportOptions[ i ] = exportOption;
                         // hover to show tooltip
-                        if( ImGui.IsItemHovered() ) {
-                            ImGui.SetTooltip( $"Export \"{node.DisplayName}\"" );
-                        }
+                        if( ImGui.IsItemHovered() ) { ImGui.SetTooltip( $"Export \"{node.DisplayName}\"" ); }
 
                         // quick export button
                         ImGui.SameLine();
@@ -227,13 +221,12 @@ namespace Xande.TestPlugin.Windows {
                         ImGui.PushFont( UiBuilder.IconFont );
                         if( ImGui.Button( $"{FontAwesomeIcon.FileExport.ToIconString()}##{node.GetHashCode()}" ) && _exportTask == null ) {
                             var tmpExportOptions = new bool[resourceTree.Nodes.Length];
-                            tmpExportOptions[i] = true;
-                            _exportTask = _onScreenExporter.ExportResourceTree( resourceTree, tmpExportOptions, true, _exportCts.Token );
+                            tmpExportOptions[ i ] = true;
+                            _exportTask           = _onScreenExporter.ExportResourceTree( resourceTree, tmpExportOptions, true, _exportCts.Token );
                         }
+
                         ImGui.PopFont();
-                        if ( ImGui.IsItemHovered() ) {
-                            ImGui.SetTooltip( $"Export \"{node.DisplayName}\" as individual model" );
-                        }
+                        if( ImGui.IsItemHovered() ) { ImGui.SetTooltip( $"Export \"{node.DisplayName}\" as individual model" ); }
 
                         ImGui.SameLine();
                     }
@@ -267,13 +260,10 @@ namespace Xande.TestPlugin.Windows {
         private void DrawCopyableText( string text ) {
             ImGui.Text( text );
             // click to copy
-            if( ImGui.IsItemClicked( ImGuiMouseButton.Right ) ) {
-                ImGui.SetClipboardText( text );
-            }
+            if( ImGui.IsItemClicked( ImGuiMouseButton.Left ) ) { ImGui.SetClipboardText( text ); }
+
             // hover to show tooltip
-            if( ImGui.IsItemHovered() ) {
-                ImGui.SetTooltip( $"Copy \"{text}\" to clipboard" );
-            }
+            if( ImGui.IsItemHovered() ) { ImGui.SetTooltip( $"Copy \"{text}\" to clipboard" ); }
         }
 
         private void DrawResourceNode( Node node ) {
@@ -294,9 +284,7 @@ namespace Xande.TestPlugin.Windows {
                 DrawCopyableText( node.FullPath );
 
                 if( section ) {
-                    foreach( var child in node.Children ) {
-                        DrawResourceNode( child );
-                    }
+                    foreach( var child in node.Children ) { DrawResourceNode( child ); }
                 }
             }
             else {
@@ -312,68 +300,53 @@ namespace Xande.TestPlugin.Windows {
             DrawResourceListView();
         }
 
-        private Task<(string, string, ResourceTree, DateTime, bool[])> LoadResourceListFromDisk(string pathToFile) {
+        private Task< (string, string, ResourceTree, DateTime, bool[]) > LoadResourceListFromDisk( string pathToFile ) {
             return Task.Run( () => {
                 try {
-                    if( !File.Exists( pathToFile ) ) {
-                        throw new Exception( "No resource file found" );
-                    }
+                    if( !File.Exists( pathToFile ) ) { throw new Exception( "No resource file found" ); }
 
-                    var contents = File.ReadAllText( pathToFile );
-                    var resourceTree = JsonConvert.DeserializeObject<ResourceTree>( contents );
+                    var contents     = File.ReadAllText( pathToFile );
+                    var resourceTree = JsonConvert.DeserializeObject< ResourceTree >( contents );
 
-                    if( resourceTree == null ) {
-                        throw new Exception( "No resource trees found" );
-                    }
+                    if( resourceTree == null ) { throw new Exception( "No resource trees found" ); }
 
-                    if( resourceTree.Nodes.Length == 0 ) {
-                        throw new Exception( "No resources found" );
-                    }
+                    if( resourceTree.Nodes.Length == 0 ) { throw new Exception( "No resources found" ); }
 
-                    var contentHash = Convert.ToBase64String( SHA256.HashData( Encoding.UTF8.GetBytes( contents ) ) );
+                    var contentHash   = Convert.ToBase64String( SHA256.HashData( Encoding.UTF8.GetBytes( contents ) ) );
                     var exportOptions = new bool[resourceTree.Nodes.Length];
-                    return (resourceTree.Name, contentHash, resourceTree, DateTime.UtcNow, exportOptions);
-                } catch( Exception e ) {
+                    return ( resourceTree.Name, contentHash, resourceTree, DateTime.UtcNow, exportOptions );
+                }
+                catch( Exception e ) {
                     _log.Error( e, "Error loading resources from file" );
                     throw;
                 }
             } );
         }
 
-        private Task<(string, string, ResourceTree, DateTime, bool[])> RefreshResourceList( ushort gameObjectIndex,  (string, string, ResourceTree, DateTime, bool[])? previous) {
+        private Task< (string, string, ResourceTree, DateTime, bool[]) > RefreshResourceList( ushort gameObjectIndex, (string, string, ResourceTree, DateTime, bool[])? previous ) {
             return Task.Run( () => {
                 try {
                     var ipcResult = Ipc.GetSerializedResourceTrees.Subscriber( _dalamudPluginInterface ).Invoke( true, new[] { gameObjectIndex } );
-                    if( ipcResult == default ) {
-                        throw new Exception( "IPC call failed" );
-                    }
+                    if( ipcResult == default ) { throw new Exception( "IPC call failed" ); }
 
-                    if( ipcResult.Count == 0 || ipcResult[0] == default) {
-                        return ( "Empty Tree", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() );
-                    }
+                    if( ipcResult.Count == 0 || ipcResult[ 0 ] == default ) { return ( "Empty Tree", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() ); }
 
-                    var treeResult = ipcResult[0];
-                    var resourceTree = JsonConvert.DeserializeObject<ResourceTree>( treeResult.Item2 );
-                    if( resourceTree == null ) {
-                        return ( "No Tree", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() );
-                    }
+                    var treeResult   = ipcResult[ 0 ];
+                    var resourceTree = JsonConvert.DeserializeObject< ResourceTree >( treeResult.Item2 );
+                    if( resourceTree == null ) { return ( "No Tree", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() ); }
 
-                    if( resourceTree.Nodes.Length == 0 ) {
-                        return ( "No Nodes", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() );
-                    }
+                    if( resourceTree.Nodes.Length == 0 ) { return ( "No Nodes", "", new ResourceTree(), DateTime.UtcNow, Array.Empty< bool >() ); }
 
                     // hash response for comparison later
                     var contentHash = Convert.ToBase64String( SHA256.HashData( Encoding.UTF8.GetBytes( treeResult.Item2 ) ) );
-                    if ( previous != null && previous.Value.Item2 == contentHash ) {
+                    if( previous != null && previous.Value.Item2 == contentHash ) {
                         // copy but update refreshedAt
-                        return (treeResult.Item1, contentHash, resourceTree, DateTime.UtcNow, previous.Value.Item5);
+                        return ( treeResult.Item1, contentHash, resourceTree, DateTime.UtcNow, previous.Value.Item5 );
                     }
 
                     // if length same, use previous export options
                     var exportOptions = new bool[resourceTree.Nodes.Length];
-                    if( previous != null && previous.Value.Item5.Length == exportOptions.Length ) {
-                        previous.Value.Item5.CopyTo( exportOptions, 0 );
-                    }
+                    if( previous != null && previous.Value.Item5.Length == exportOptions.Length ) { previous.Value.Item5.CopyTo( exportOptions, 0 ); }
 
                     // make safe name with timestamp
                     var name = $"{resourceTree.Name}_{DateTime.Now:yyyy-MM-dd_HH-mm-ss}.json";
@@ -382,7 +355,7 @@ namespace Xande.TestPlugin.Windows {
                     Directory.CreateDirectory( _tempDirectory );
                     File.WriteAllText( resourceFile, treeResult.Item2 );
 
-                    return (treeResult.Item1, contentHash, resourceTree, DateTime.UtcNow, exportOptions);
+                    return ( treeResult.Item1, contentHash, resourceTree, DateTime.UtcNow, exportOptions );
                 }
                 catch( Exception e ) {
                     _log.Error( e, "Error loading resources" );

@@ -41,6 +41,15 @@
         "dependencies": {
           "Lumina": "[3.11.0, )",
           "SharpGLTF.Core": "[1.0.0-alpha0028, )",
+          "SharpGLTF.Toolkit": "[1.0.0-alpha0028, )",
+          "Xande.Lumina": "[1.0.0, )"
+        }
+      },
+      "xande.lumina": {
+        "type": "Project",
+        "dependencies": {
+          "Lumina": "[3.11.0, )",
+          "SharpGLTF.Core": "[1.0.0-alpha0028, )",
           "SharpGLTF.Toolkit": "[1.0.0-alpha0028, )"
         }
       }

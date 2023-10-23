@@ -12,4 +12,8 @@
     <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0028" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Xande.Lumina\Xande.Lumina.csproj" />
+  </ItemGroup>
+
 </Project>

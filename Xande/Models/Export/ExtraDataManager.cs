@@ -1,5 +1,6 @@
 ﻿using Lumina.Models.Models;
 using SharpGLTF.IO;
+using Shape = Xande.Lumina.Models.Shape;
 
 namespace Xande.Models.Export;
 
