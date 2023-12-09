@@ -1,16 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-  <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-
-  <ItemGroup>
-    <PackageReference Include="SharpGLTF.Core" Version="1.0.0-alpha0028" />
-    <PackageReference Include="SharpGLTF.Toolkit" Version="1.0.0-alpha0028" />
-  </ItemGroup>
-    
+    <PropertyGroup>
+        <TargetFramework>net7.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
     <PropertyGroup>
         <DalamudLibPath>$(appdata)\XIVLauncher\addon\Hooks\dev\</DalamudLibPath>
     </PropertyGroup>
@@ -25,10 +19,4 @@
             <Private>false</Private>
         </Reference>
     </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\Xande.Common\Xande.Common.csproj" />
-    <ProjectReference Include="..\Xande.Common\Xande.Common.csproj" />
-  </ItemGroup>
-
 </Project>

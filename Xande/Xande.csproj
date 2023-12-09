@@ -40,6 +40,8 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\..\Xande.Common\Xande.Common.csproj" />
+      <ProjectReference Include="..\Xande.Common\Xande.Common.csproj" />
       <ProjectReference Include="..\Xande.GltfImporter\Xande.GltfImporter.csproj" />
     </ItemGroup>
 </Project>

@@ -12,6 +12,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Xande.TestPlugin", "Xande.T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xande.GltfImporter", "Xande.GltfImporter\Xande.GltfImporter.csproj", "{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xande.Common", "Xande.Common\Xande.Common.csproj", "{FA91DC14-1B99-4B57-92F6-C38AE843A682}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,6 +32,10 @@ Global
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{895BA7CB-1FB5-4471-A7E8-85FBFC5A18F1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FA91DC14-1B99-4B57-92F6-C38AE843A682}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FA91DC14-1B99-4B57-92F6-C38AE843A682}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FA91DC14-1B99-4B57-92F6-C38AE843A682}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FA91DC14-1B99-4B57-92F6-C38AE843A682}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

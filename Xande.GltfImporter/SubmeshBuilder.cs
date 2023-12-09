@@ -1,19 +1,8 @@
 using Lumina;
-using Lumina.Data.Files;
 using Lumina.Data.Parsing;
-using Lumina.Models.Models;
-using Microsoft.VisualBasic;
-using SharpGLTF.Memory;
 using SharpGLTF.Schema2;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Numerics;
-using System.Text;
-using System.Text.Json;
 using System.Text.Json.Nodes;
-using System.Threading.Tasks;
-
 using Mesh = SharpGLTF.Schema2.Mesh;
 
 
@@ -44,7 +33,7 @@ namespace Xande.GltfImporter {
         private VertexDataBuilder VertexDataBuilder;
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="mesh"></param>
         /// <param name="skeleton"></param>
@@ -219,7 +208,7 @@ namespace Xande.GltfImporter {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="indexOffset">The value to add to all index values</param>
         /// <returns></returns>

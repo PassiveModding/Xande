@@ -4,8 +4,8 @@ using System.Drawing.Imaging;
 using Lumina;
 using Lumina.Data;
 using Lumina.Data.Files;
-using Lumina.Models.Materials;
-using Lumina.Models.Models;
+using Xande.Common.Materials;
+using Xande.Common.Models;
 using Xande.Files;
 
 // ReSharper disable MemberCanBePrivate.Global

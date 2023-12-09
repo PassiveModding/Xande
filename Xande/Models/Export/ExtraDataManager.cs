@@ -1,4 +1,4 @@
-﻿using Lumina.Models.Models;
+﻿using Xande.Common.Models;
 using SharpGLTF.IO;
 
 namespace Xande.Models.Export;

@@ -1,5 +1,5 @@
 using System.Numerics;
-using Lumina.Models.Models;
+using Xande.Common.Models;
 using SharpGLTF.Geometry;
 using SharpGLTF.Geometry.VertexTypes;
 using SharpGLTF.Materials;

@@ -1,15 +1,5 @@
 using Lumina;
-using Lumina.Data.Files;
 using Lumina.Data.Parsing;
-using Lumina.Models.Models;
-using SharpGLTF.Schema2;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Text.Json.Nodes;
-using System.Threading.Tasks;
 
 namespace Xande.GltfImporter {
     internal class MeshBuilder {
@@ -57,7 +47,7 @@ namespace Xande.GltfImporter {
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         /// <param name="strings">An optional list of strings that may or may not contain the names of used shapes</param>
         /// <returns></returns>
