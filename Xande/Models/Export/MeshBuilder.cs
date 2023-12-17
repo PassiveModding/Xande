@@ -162,6 +162,7 @@ public class MeshBuilder {
         if( !skinningIsEmpty ) {
             for( var k = 0; k < 4; k++ ) {
                 var boneIndex       = vertex.BlendIndices[ k ];
+                if (_jointMap == null || !_jointMap.ContainsKey(boneIndex)) continue;
                 var mappedBoneIndex = _jointMap[ boneIndex ];
                 var boneWeight      = vertex.BlendWeights != null ? vertex.BlendWeights.Value[ k ] : 0;
 
